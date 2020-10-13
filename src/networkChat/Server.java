@@ -79,6 +79,25 @@ public class Server {
                 }
             }
         }
+
+        /**
+         * Главный цикл обработки сообщений
+         * @param connection
+         * @param userName
+         * @throws IOException
+         * @throws ClassNotFoundException
+         */
+        private void serverMainLoop(Connection connection, String userName) throws IOException, ClassNotFoundException {
+            while (true) {
+                Message message = connection.receive();
+                if(message.getType() == MessageType.TEXT) {
+                    Message newMessage = new Message(MessageType.TEXT, userName + ": " + message.getData());
+                    sendBroadcastMessage(newMessage);
+                }
+                else
+                    ConsoleHelper.writeMessage("Ошибка ввода");
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException {
