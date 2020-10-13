@@ -62,8 +62,22 @@ public class Server {
             //Отправляет подтверждение об успешном добавлении имени
             connection.send(new Message(MessageType.NAME_ACCEPTED));
             return userName;
+        }
 
-
+        /**
+         * Отправляет участникам чата сообщение с именем нового клиента
+         * @param connection
+         * @param userName
+         * @throws IOException
+         */
+        private void notifyUsers(Connection connection, String userName) throws IOException {
+            for (ConcurrentHashMap.Entry<String, Connection> keys : connectionMap.entrySet()) {
+                String key = keys.getKey();
+                if (key != userName) {
+                    Message message = new Message(MessageType.USER_ADDED, key);
+                    connection.send(message);
+                }
+            }
         }
     }
 
