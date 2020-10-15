@@ -98,6 +98,34 @@ public class Server {
                     ConsoleHelper.writeMessage("Ошибка ввода");
             }
         }
+
+        /**
+         * Главный метод класса Handler
+         */
+        public void run() {
+            System.out.println("Установленно сообщение с адресом " + socket.getRemoteSocketAddress());
+            String userName = null;
+            try {
+                //Создаёт новое соединение
+                Connection connection = new Connection(socket);
+                //Получает имя пользователя
+                userName = serverHandshake(connection);
+                Message message = new Message(MessageType.USER_ADDED, userName);
+                sendBroadcastMessage(message);
+                notifyUsers(connection, userName);
+                serverMainLoop(connection,userName);
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            finally {
+                if(userName != null) {
+                    // Удаляет запись соответ. имени пользователя
+                    connectionMap.remove(userName);
+                    Message message = new Message(MessageType.USER_REMOVED, userName);
+                    sendBroadcastMessage(message);
+                }
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException {
