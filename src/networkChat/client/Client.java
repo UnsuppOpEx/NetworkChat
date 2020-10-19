@@ -79,14 +79,53 @@ public class Client {
 
     public class SocketThread extends Thread {
 
+        /**
+         * Вывводит текст message в консоль
+         * @param message
+         */
+        protected void processIncomingMessage(String message) {
+            ConsoleHelper.writeMessage(message);
+        }
+
+        /**
+         * Выводит имя участника просоеденивщегося к чату
+         * @param userName
+         */
+        protected void informAboutAddingNewUser(String userName) {
+            ConsoleHelper.writeMessage("Участник с именем " + userName + " присоединился к чату");
+        }
+
+        /**
+         * Выводит имя участника покинувшего чат
+         * @param userName
+         */
+        protected void informAboutDeletingNewUser(String userName) {
+            ConsoleHelper.writeMessage("Участник с именем " + userName + " покинул чат");
+        }
+
+        /**
+         * Уст. значение поля clientConnected и пробуждает осн. поток класса Client
+         * @param clientConnected
+         */
+        protected void notifyConnectionStatusChanged(boolean clientConnected) {
+            Client.this.clientConnected = clientConnected;
+            synchronized (Client.this) {
+                Client.this.notify();
+            }
+        }
+
     }
 
+    /**
+     * Создаёт новый поток полученный с помощью getSocketThread
+     */
     public void run() {
         SocketThread socketThread = getSocketThread();
         //Создаёт и запускает поток демон
         socketThread.setDaemon(true);
         socketThread.start();
 
+        //Синхонизируем и ожидаем пока не будет пробуждён
         synchronized (this) {
             try {
                 this.wait();
