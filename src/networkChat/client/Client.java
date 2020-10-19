@@ -80,4 +80,44 @@ public class Client {
     public class SocketThread extends Thread {
 
     }
+
+    public void run() {
+        SocketThread socketThread = getSocketThread();
+        //Создаёт и запускает поток демон
+        socketThread.setDaemon(true);
+        socketThread.start();
+
+        synchronized (this) {
+            try {
+                this.wait();
+            } catch (InterruptedException e) {
+                ConsoleHelper.writeMessage(e.getMessage());
+                return;
+            }
+        }
+
+        if (clientConnected)
+            ConsoleHelper.writeMessage("Соединение установлено. Для выхода наберите команду 'exit'.");
+        else
+            ConsoleHelper.writeMessage("Произошла ошибка во время работы клиента.");
+
+        while (clientConnected) {
+            String text = ConsoleHelper.readString();
+            if (text.toLowerCase().equals("exit"))
+                break;
+
+            if (shouldSendTextFromConsole())
+                sendTextMessage(text);
+        }
+    }
+
+    /**
+     * Создаёт новый объект типа Client с вызовом run
+     * @param args
+     */
+    public static void main(String[] args) {
+        Client client = new Client();
+        client.run();
+
+    }
 }
