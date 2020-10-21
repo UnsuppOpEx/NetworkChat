@@ -114,6 +114,55 @@ public class Client {
             }
         }
 
+        /**
+         * Представление клиента серверу
+         * @throws IOException
+         * @throws ClassNotFoundException
+         */
+        protected void clientHandshake() throws IOException, ClassNotFoundException {
+            while (true) {
+                while (connection.receive().getType() == MessageType.NAME_REQUEST) {
+                    Message message = new Message(MessageType.USER_NAME, getUserName());
+                    connection.send(message);
+                }
+                if (connection.receive().getType() == MessageType.NAME_ACCEPTED) {
+                    notifyConnectionStatusChanged(true);
+                } else
+                    throw new IOException("Unexpected MessageType");
+                break;
+            }
+        }
+
+        /**
+         * Цикл обработки сообщений сервера
+         * @throws IOException
+         * @throws ClassNotFoundException
+         */
+        protected void clientMainLoop() throws IOException, ClassNotFoundException {
+            while (true) {
+                Message message = connection.receive();
+                if (message.getType() != null) {
+
+                    switch (message.getType()) {
+                        case TEXT:
+                            processIncomingMessage(message.getData());
+                            break;
+                        case USER_ADDED:
+                            informAboutAddingNewUser(message.getData());
+                            break;
+                        case USER_REMOVED:
+                            informAboutDeletingNewUser(message.getData());
+                            break;
+                        default:
+                            throw new IOException("Unexpected MessageType");
+                    }
+                } else {
+                    throw new IOException("Unexpected MessageType");
+                }
+            }
+
+        }
+
     }
 
     /**
