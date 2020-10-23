@@ -6,6 +6,7 @@ import networkChat.Message;
 import networkChat.MessageType;
 
 import java.io.IOException;
+import java.net.Socket;
 
 /**
  * Класс клиент
@@ -163,6 +164,20 @@ public class Client {
 
         }
 
+        /**
+         * Главный метод SocketThread
+         */
+        @Override
+        public void run() {
+            try {
+                Socket socket = new Socket(getServerAddress(),getServerPort());
+                connection = new Connection(socket);
+                clientHandshake();
+                clientMainLoop();
+            } catch (IOException | ClassNotFoundException e) {
+                notifyConnectionStatusChanged(false);
+            }
+        }
     }
 
     /**
