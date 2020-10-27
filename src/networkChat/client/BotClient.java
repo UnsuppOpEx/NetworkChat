@@ -1,10 +1,70 @@
 package networkChat.client;
 
+import networkChat.ConsoleHelper;
+
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class BotClient extends Client {
     public class BotSocketThread extends SocketThread {
 
+        @Override
+        protected void clientMainLoop() throws IOException, ClassNotFoundException {
+
+            sendTextMessage(
+                    "Привет чатику. Я бот. Понимаю команды: дата, день, месяц, год, время, час, минуты, секунды."
+            );
+            super.clientMainLoop();
+        }
+
+        /**
+         * Обрабатывает запросы от клиентов и отправляет ответ
+         * @param message
+         */
+        @Override
+        protected void processIncomingMessage(String message) {
+            ConsoleHelper.writeMessage(message);
+            String[] messageParts = message.split(": ");
+            if (messageParts.length == 2) {
+                String messageAuthor = messageParts[0];
+                String messageText = messageParts[1].toLowerCase();
+                String dateTimeformat = null;
+                switch (messageText) {
+                    case "дата":
+                        dateTimeformat = "d.MM.YYYY";
+                        break;
+                    case "день":
+                        dateTimeformat = "d";
+                        break;
+                    case "месяц":
+                        dateTimeformat = "MMMM";
+                        break;
+                    case "год":
+                        dateTimeformat = "YYYY";
+                        break;
+                    case "время":
+                        dateTimeformat = "H:mm:ss";
+                        break;
+                    case "час":
+                        dateTimeformat = "H";
+                        break;
+                    case "минуты":
+                        dateTimeformat = "m";
+                        break;
+                    case "секунды":
+                        dateTimeformat = "s";
+                        break;
+                }
+                if (dateTimeformat != null) {
+                    String reply = String.format("Информация для %s: %s",
+                            messageAuthor,
+                            new SimpleDateFormat(dateTimeformat).format(Calendar.getInstance().getTime())
+                    );
+                    sendTextMessage(reply);
+                }
+            }
+        }
     }
 
     /**
