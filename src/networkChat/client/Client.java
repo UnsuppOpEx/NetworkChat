@@ -122,15 +122,18 @@ public class Client {
          */
         protected void clientHandshake() throws IOException, ClassNotFoundException {
             while (true) {
-                while (connection.receive().getType() == MessageType.NAME_REQUEST) {
-                    Message message = new Message(MessageType.USER_NAME, getUserName());
-                    connection.send(message);
+                Message message = connection.receive();
+                switch (message.getType()) {
+                    case NAME_REQUEST:
+                        String clientName = getUserName();
+                        connection.send(new Message(MessageType.USER_NAME, clientName));
+                        break;
+                    case NAME_ACCEPTED:
+                        notifyConnectionStatusChanged(true);
+                        return;
+                    default:
+                        throw new IOException("Unexpected MessageType");
                 }
-                if (connection.receive().getType() == MessageType.NAME_ACCEPTED) {
-                    notifyConnectionStatusChanged(true);
-                } else
-                    throw new IOException("Unexpected MessageType");
-                break;
             }
         }
 
